@@ -3,3 +3,4 @@ members = [
     "adventlib",
     "advent2015_01",
 ]
+resolver = "3"

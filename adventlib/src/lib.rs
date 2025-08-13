@@ -1,14 +1,7 @@
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
-}
+use std::fs::read_to_string;
+use std::io::Result;
+use std::string::String;
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
+pub fn read_file_lines(filename: &str) -> Result<Vec<String>> {
+    Ok(read_to_string(filename)?.lines().map(String::from).collect())
 }

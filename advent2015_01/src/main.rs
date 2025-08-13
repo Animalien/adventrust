@@ -1,4 +1,24 @@
+use std::string::String;
+
 use adventlib::*;
+
+fn process_line(line: &str) -> i32 {
+    let mut floor = 0;
+
+    for c in line.chars() {
+        match c {
+            '(' => {
+                floor = floor + 1;
+            }
+            ')' => {
+                floor = floor - 1;
+            }
+            _ => panic!("Malformed line: {}", line)
+        }
+    }
+
+    floor
+}
 
 fn process(filename: &str) {
     let lines = match read_file_lines(filename) {
@@ -9,14 +29,20 @@ fn process(filename: &str) {
         Ok(val) => val
     };
 
-    println!("  Contents:");
+    println!("Processing contents of {}", filename);
     for line in lines {
-        println!("    {}", line);
+        let floor = process_line(&line);
+        let line_to_print = if line.len() > 20 {
+            &(String::from(&line[..20]) + "...")
+        } else {
+            &line
+        };
+
+        println!("  Line '{line_to_print}' takes us to {floor}");
     }
 }
 
 fn main() {
-    process("BeaverFuck.txt");
     process("Examples.txt");
     process("Input.txt");
 }

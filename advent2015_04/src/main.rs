@@ -2,15 +2,26 @@ use md5::{Md5, Digest};
 
 use adventlib::*;
 
-fn result_has_five_zero_prefix(result: &[u8]) -> bool {
-    if result.len() < 3 {
-        return false;
+
+const ENABLE_VERBOSE: bool = false;
+
+fn result_has_zero_prefix(result: &[u8], num_zeroes: usize) -> bool {
+    let num_bytes = num_zeroes >> 1;
+
+    for b in &result[0..num_bytes] {
+        if *b != 0 {
+            return false;
+        }
     }
 
-    result[0] == 0 && result[1] == 0 && result[2] <= 15
+    if num_zeroes & 1 != 0 {
+        result[num_bytes] <= 15u8
+    } else {
+        true
+    }
 }
 
-fn process(filename: &str) {
+fn process(filename: &str, num_zeroes: usize) {
     let lines = match read_file_lines(filename) {
         Err(err) => {
             println!("process failed: {:?}", err);
@@ -19,7 +30,7 @@ fn process(filename: &str) {
         Ok(val) => val
     };
 
-    println!("Processing contents of {}", filename);
+    println!("Processing contents of {}, looking for {num_zeroes} leading zeroes", filename);
 
     for line in lines {
 
@@ -32,13 +43,12 @@ fn process(filename: &str) {
             hasher.update(string_to_hash.as_bytes());
             let result = hasher.finalize();
 
-            if result_has_five_zero_prefix(&result) {
-                println!("  For line {line}, hashed {string_to_hash}, found: {:02X}{:02X}{:02X}", result[0], result[1], result[2]);
+            if result_has_zero_prefix(&result, num_zeroes) {
+                println!("  For line {line}, hashed {string_to_hash}, found: {:02X?}, the desired number is therefore {number}", result);
                 break;
+            } else if ENABLE_VERBOSE {
+                println!("    For line {line}, {string_to_hash} doesn't work!  result hash = {:02X?}", result);
             }
-            //else {
-            //    println!("    For line {line}, {string_to_hash} doesn't work!  result hash = {:02X?}", result);
-            //}
 
             number += 1;
         }
@@ -46,6 +56,7 @@ fn process(filename: &str) {
 }
 
 fn main() {
-    process("Examples.txt");
-    process("Input.txt");
+    process("Examples.txt", 5);
+    process("Input.txt", 5);
+    process("Input.txt", 6);
 }

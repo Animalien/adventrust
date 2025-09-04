@@ -3,18 +3,9 @@ use std::string::String;
 
 use adventlib::*;
 
-fn process(filename: &str, wires_to_print: &[&str]) {
-    let lines = match read_file_lines(filename) {
-        Err(err) => {
-            println!("process failed: {:?}", err);
-            return;
-        }
-        Ok(val) => val
-    };
+fn try_process_lines(lines: &Vec<String>, value_map: &mut HashMap<String, u16>) -> Vec<String> {
+    let mut postponed_lines = Vec::<String>::new();
 
-    println!("Processing contents of {}", filename);
-
-    let mut value_map = HashMap::<String, u16>::new();
     for line in lines {
         let mut token_iter = line.split(' ').peekable();
 
@@ -28,9 +19,16 @@ fn process(filename: &str, wires_to_print: &[&str]) {
         }
 
         let first_arg = token_iter.next().unwrap();
-        let mut new_value = match first_arg.parse::<u16>() {
-            Ok(value) => value,
-            Err(_) => *value_map.get(first_arg).unwrap(),
+        let mut new_value;
+        match first_arg.parse::<u16>() {
+            Ok(value) => new_value = value,
+            Err(_) => match value_map.get(first_arg) {
+                Some(value) => new_value = *value,
+                None => {
+                    postponed_lines.push(line.to_string());
+                    continue;
+                },
+            },
         };
 
         if notted {
@@ -42,36 +40,64 @@ fn process(filename: &str, wires_to_print: &[&str]) {
             &"AND" => {
                 token_iter.next();
                 let second_arg = token_iter.next().unwrap();
-                let second_arg_value = match second_arg.parse::<u16>() {
-                    Ok(value) => value,
-                    Err(_) => *value_map.get(second_arg).unwrap(),
+                let second_arg_value;
+                match second_arg.parse::<u16>() {
+                    Ok(value) => second_arg_value = value,
+                    Err(_) => match value_map.get(second_arg) {
+                        Some(value) => second_arg_value = *value,
+                        None => {
+                            postponed_lines.push(line.to_string());
+                            continue;
+                        },
+                    },
                 };
                 new_value = new_value & second_arg_value;
             },
             &"OR" => {
                 token_iter.next();
                 let second_arg = token_iter.next().unwrap();
-                let second_arg_value = match second_arg.parse::<u16>() {
-                    Ok(value) => value,
-                    Err(_) => *value_map.get(second_arg).unwrap(),
+                let second_arg_value;
+                match second_arg.parse::<u16>() {
+                    Ok(value) => second_arg_value = value,
+                    Err(_) => match value_map.get(second_arg) {
+                        Some(value) => second_arg_value = *value,
+                        None => {
+                            postponed_lines.push(line.to_string());
+                            continue;
+                        },
+                    },
                 };
                 new_value = new_value | second_arg_value;
             },
             &"LSHIFT" => {
                 token_iter.next();
                 let second_arg = token_iter.next().unwrap();
-                let second_arg_value = match second_arg.parse::<u16>() {
-                    Ok(value) => value,
-                    Err(_) => *value_map.get(second_arg).unwrap(),
+                let second_arg_value;
+                match second_arg.parse::<u16>() {
+                    Ok(value) => second_arg_value = value,
+                    Err(_) => match value_map.get(second_arg) {
+                        Some(value) => second_arg_value = *value,
+                        None => {
+                            postponed_lines.push(line.to_string());
+                            continue;
+                        },
+                    },
                 };
                 new_value = new_value << second_arg_value;
             },
             &"RSHIFT" => {
                 token_iter.next();
                 let second_arg = token_iter.next().unwrap();
-                let second_arg_value = match second_arg.parse::<u16>() {
-                    Ok(value) => value,
-                    Err(_) => *value_map.get(second_arg).unwrap(),
+                let second_arg_value;
+                match second_arg.parse::<u16>() {
+                    Ok(value) => second_arg_value = value,
+                    Err(_) => match value_map.get(second_arg) {
+                        Some(value) => second_arg_value = *value,
+                        None => {
+                            postponed_lines.push(line.to_string());
+                            continue;
+                        },
+                    },
                 };
                 new_value = new_value >> second_arg_value;
             },
@@ -84,6 +110,27 @@ fn process(filename: &str, wires_to_print: &[&str]) {
         let destination = token_iter.next().unwrap();
 
         value_map.insert(destination.to_string(), new_value);
+    }
+
+    postponed_lines
+}
+
+fn process(filename: &str, wires_to_print: &[&str]) {
+    let lines = match read_file_lines(filename) {
+        Err(err) => {
+            println!("process failed: {:?}", err);
+            return;
+        }
+        Ok(val) => val
+    };
+
+    println!("Processing contents of {}", filename);
+
+    let mut value_map = HashMap::<String, u16>::new();
+
+    let mut postponed_lines = try_process_lines(&lines, &mut value_map);
+    while !postponed_lines.is_empty() {
+        postponed_lines = try_process_lines(&postponed_lines, &mut value_map);
     }
 
     for var_name in wires_to_print {

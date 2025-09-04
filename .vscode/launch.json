@@ -189,5 +189,23 @@
             "args": [],
             "cwd": "${workspaceFolder}\\advent2015_06"
         },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'advent2015_07'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=advent2015_07",
+                    "--package=advent2015_07"
+                ],
+                "filter": {
+                    "name": "advent2015_07",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}\\advent2015_07"
+        },
     ]
 }

@@ -115,8 +115,8 @@ fn try_process_lines(lines: &Vec<String>, value_map: &mut HashMap<String, u16>) 
     postponed_lines
 }
 
-fn process(filename: &str, wires_to_print: &[&str]) {
-    let lines = match read_file_lines(filename) {
+fn process(filename: &str, wires_to_print: &[&str], remap_source: Option<&str>, remap_dest: Option<&str>) {
+    let mut lines = match read_file_lines(filename) {
         Err(err) => {
             println!("process failed: {:?}", err);
             return;
@@ -124,7 +124,7 @@ fn process(filename: &str, wires_to_print: &[&str]) {
         Ok(val) => val
     };
 
-    println!("Processing contents of {}", filename);
+    println!("Processing contents of {}, with a final remap of {:?} to {:?}", filename, remap_source, remap_dest);
 
     let mut value_map = HashMap::<String, u16>::new();
 
@@ -133,12 +133,24 @@ fn process(filename: &str, wires_to_print: &[&str]) {
         postponed_lines = try_process_lines(&postponed_lines, &mut value_map);
     }
 
+    if remap_source.is_some() && remap_dest.is_some() {
+        let source_value = value_map.get(remap_source.unwrap()).unwrap();
+        *lines.iter_mut().find(|s| { s.split(' ').rev().next().unwrap() == remap_dest.unwrap() }).unwrap() = format!("{source_value} -> {}", remap_dest.unwrap());
+
+        value_map.clear();
+        postponed_lines = try_process_lines(&lines, &mut value_map);
+        while !postponed_lines.is_empty() {
+            postponed_lines = try_process_lines(&postponed_lines, &mut value_map);
+        }
+    }
+    
     for var_name in wires_to_print {
         println!("  {var_name} = {}", value_map.get(&var_name.to_string()).unwrap());
     }
 }
 
 fn main() {
-    process("Examples.txt", &["d", "e", "f", "g", "h", "i", "x", "y"]);
-    process("Input.txt", &["a"]);
+    process("Examples.txt", &["d", "e", "f", "g", "h", "i", "x", "y"], None, None);
+    process("Input.txt", &["a"], None, None);
+    process("Input.txt", &["a"], Some("a"), Some("b"));
 }

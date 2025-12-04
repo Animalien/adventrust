@@ -2,6 +2,6 @@
 members = [
     "adventlib",
     "advent2015_01", "advent2015_02", "advent2015_03", "advent2015_04", "advent2015_05", "advent2015_06", "advent2015_07", "advent2015_08", "advent2015_09",
-    "advent2025_01"
+    "advent2025_01", "advent2025_02"
 ]
 resolver = "3"

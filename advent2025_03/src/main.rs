@@ -7,11 +7,7 @@ fn voltage_from_string(string: &str, num_chars: usize) -> usize {
 
     while num_chars_remaining > 0 {
         let num_chars_to_check = string.len() - next_char_index - num_chars_remaining + 1;
-        let mut char_indices_iter = string.char_indices().skip(next_char_index).take(num_chars_to_check).peekable();
-        if char_indices_iter.peek().is_none() {
-            println!("    WE GOT NUN!  next_char_index = {next_char_index}, num_chars_remaining = {num_chars_remaining}, num_chars_to_check = {num_chars_to_check}, string = {string}, voltage = {voltage}");
-        }
-        assert!(!char_indices_iter.peek().is_none());
+        let char_indices_iter = string.char_indices().skip(next_char_index).take(num_chars_to_check).peekable();
         let best_next_char_tuple = char_indices_iter.max_by(|lhs, rhs| if lhs.1 == rhs.1 { rhs.0.cmp(&lhs.0) } else { lhs.1.cmp(&rhs.1) }).unwrap();
         let best_next_char = best_next_char_tuple.1;
         next_char_index = best_next_char_tuple.0 + 1;

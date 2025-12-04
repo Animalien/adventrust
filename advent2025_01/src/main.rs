@@ -1,5 +1,7 @@
 use adventlib::*;
 
+const NUM_DIAL_POINTS: i32 = 100;
+
 fn process(filename: &str, verbose: bool) {
     let lines = match read_file_lines(filename) {
         Err(err) => {
@@ -16,24 +18,32 @@ fn process(filename: &str, verbose: bool) {
         println!("  {dial}");
     }
 
-    let mut num_times_zero = 0u32;
+    let mut num_times_zero = 0i32;
 
     for line in lines {
+        let prev_dial = dial;
+
         let left = line.chars().next().unwrap() == 'L';
-        let delta = &line[1..].parse().unwrap();
+        let delta: i32 = line[1..].parse().unwrap();
+
+        let num_times_zero_this_line;
+        if left {
+            // flip dial
+            dial = (NUM_DIAL_POINTS - dial) % NUM_DIAL_POINTS;
+        }
+
+        num_times_zero_this_line = (dial + delta) / NUM_DIAL_POINTS;
+        dial = (dial + delta) % NUM_DIAL_POINTS;
 
         if left {
-            dial = (dial - delta).rem_euclid(100);
-        } else {
-            dial = (dial + delta).rem_euclid(100);
+            // flip dial back again
+            dial = (NUM_DIAL_POINTS - dial) % NUM_DIAL_POINTS;
         }
+
+        num_times_zero += num_times_zero_this_line;
 
         if verbose {
-            println!("  {dial}");
-        }
-
-        if dial == 0 {
-            num_times_zero += 1;
+            println!("  {prev_dial} -> {} x {delta} -> {dial};  saw zero {num_times_zero_this_line} times", if left { "left" } else { "right" });
         }
     }
 

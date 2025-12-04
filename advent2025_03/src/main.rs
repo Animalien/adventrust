@@ -1,10 +1,6 @@
 use adventlib::*;
 
 fn voltage_from_string(string: &str, num_chars: usize) -> usize {
-    if string == "811111111111119" && num_chars == 12 {
-        println!("THE PROBLEMO")
-    }
-
     let mut next_char_index = 0usize;
     let mut num_chars_remaining = num_chars;
     let mut voltage = 0usize;

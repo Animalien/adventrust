@@ -14,28 +14,18 @@ fn num_rolls_at_xy(grid: &Vec<String>, x_center: usize, y_center: usize) -> usiz
     num_rolls
 }
 
-fn process(filename: &str, verbose: bool) {
-    let lines = match read_file_lines(filename) {
-        Err(err) => {
-            println!("process failed: {:?}", err);
-            return;
-        }
-        Ok(val) => val
-    };
+fn query_accessible_rolls(grid: &Vec<String>, verbose: bool) -> Vec<(usize, usize)> {
+    let mut accessibles = Vec::<(usize, usize)>::new();
 
-    println!("Processing contents of {}", filename);
-
-    let mut num_accessible_rolls = 0usize;
-
-    let x_grid_size = lines[0].len();
-    let y_grid_size = lines.len();
+    let x_grid_size = grid[0].len();
+    let y_grid_size = grid.len();
 
     for y in 0..y_grid_size {
         for x in 0..x_grid_size {
-            if lines[y].chars().nth(x).unwrap() == '@' {
-                let num_adjacent_rolls = num_rolls_at_xy(&lines, x, y) - 1;
+            if grid[y].chars().nth(x).unwrap() == '@' {
+                let num_adjacent_rolls = num_rolls_at_xy(&grid, x, y) - 1;
                 if num_adjacent_rolls < 4 {
-                    num_accessible_rolls += 1;
+                    accessibles.push((x, y));
 
                     if verbose {
                         println!("  at {x},{y}, found {num_adjacent_rolls} adjacent rolls, making this one accessible");
@@ -45,7 +35,48 @@ fn process(filename: &str, verbose: bool) {
         }
     }
 
-    println!("  Total num accessible rolls = {num_accessible_rolls}");
+    accessibles
+}
+
+fn remove_accessible_rolls(grid: &mut Vec<String>, accessibles: &Vec<(usize, usize)>) {
+    for (x, y) in accessibles {
+        // works because I am working in single-byte ASCII :)
+        grid[*y].replace_range(*x..*x+1, ".");
+    }
+}
+
+fn process(filename: &str, verbose: bool) {
+    let mut lines = match read_file_lines(filename) {
+        Err(err) => {
+            println!("process failed: {:?}", err);
+            return;
+        }
+        Ok(val) => val
+    };
+
+    println!("Processing contents of {}", filename);
+
+    let mut accessibles = query_accessible_rolls(&lines, verbose);
+    println!("  Total initial num accessible rolls = {}", accessibles.len());
+
+    let mut total_num_removed_rolls = 0usize;
+    while !accessibles.is_empty() {
+        remove_accessible_rolls(&mut lines, &accessibles);
+
+        let num_removed_rolls = accessibles.len();
+        total_num_removed_rolls += num_removed_rolls;
+
+        accessibles = query_accessible_rolls(&lines, false);
+
+        if verbose {
+            println!("Removed {num_removed_rolls} rolls:");
+            for line in &lines {
+                println!("  {line}");
+            }
+        }
+    }
+
+    println!("  Total number of removed rolls = {total_num_removed_rolls}");
 }
 
 fn main() {

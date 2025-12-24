@@ -59,6 +59,36 @@ fn iterate_grid(grid: &mut Vec<String>, num_splits: &mut usize) -> bool {
     reached_bottom
 }
 
+fn count_grid_universes_recurse(grid: &Vec<String>, column: usize, row: usize, num_universes: &mut usize) {
+    let mut new_row = row;
+    loop {
+        new_row += 1;
+        if new_row >= grid.len() {
+            *num_universes += 1;
+            return;
+        }
+
+        if get_grid_char(grid, column, new_row) == '^' {
+            if column > 0 {
+                count_grid_universes_recurse(grid, column - 1, new_row, num_universes);
+            }
+            if column < (grid[0].len() - 1) {
+                count_grid_universes_recurse(grid, column + 1, new_row, num_universes);
+            }
+            return;
+        }
+    }
+}
+
+fn count_grid_universes(grid: &Vec<String>) -> usize {
+    let start_column = grid[0].find('S').unwrap();
+
+    let mut num_universes = 0usize;
+    count_grid_universes_recurse(grid, start_column, 1usize, &mut num_universes);
+
+    num_universes
+}
+
 fn process(filename: &str, verbose: bool) {
     let mut grid = match read_file_lines(filename) {
         Err(err) => {
@@ -69,6 +99,8 @@ fn process(filename: &str, verbose: bool) {
     };
 
     println!("Processing contents of {filename}");
+
+    let grid_original = grid.clone();
 
     let mut num_splits = 0usize;
     while !iterate_grid(&mut grid, &mut num_splits) {
@@ -88,6 +120,8 @@ fn process(filename: &str, verbose: bool) {
     }
 
     println!("  Num total splits = {num_splits}");
+
+    println!("  Num universes = {}", count_grid_universes(&grid_original));
 }
 
 fn main() {

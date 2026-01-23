@@ -1,0 +1,8 @@
+[package]
+name = "advent2025_08"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+adventlib = { path = "../adventlib" }
+itertools = "0.12"

@@ -27,7 +27,7 @@ fn process(filename: &str) {
         total_distance += this_distance;
     }
 
-    println!("  Total distance = {total_distance}, largest distance = {:?}, so distance of shortest route = {}", largest_distance, total_distance - largest_distance.unwrap());
+    println!("  Total distance = {total_distance}, largest distance = {:?}, so distance of shortest route = {}", largest_distance.unwrap(), total_distance - largest_distance.unwrap());
 }
 
 fn main() {

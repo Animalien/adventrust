@@ -88,6 +88,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "advent2017_03"
+version = "0.1.0"
+dependencies = [
+ "adventlib",
+]
+
+[[package]]
 name = "advent2025_01"
 version = "0.1.0"
 dependencies = [

@@ -1,7 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
-fn process(cases: &HashSet<isize>, verbose: bool) {
-
+fn process(cases: &HashSet<isize>, test_value: isize, verbose: bool) {
     let max = cases.iter().max().unwrap();
 
     let mut x = 0isize;
@@ -18,13 +17,61 @@ fn process(cases: &HashSet<isize>, verbose: bool) {
         (3, (1, 0)),
     ]);
 
-    while number <= *max {
+    let mut values = HashMap::<(isize, isize), isize>::new();
+
+    let mut found_value_above_test = false;
+    while !found_value_above_test || number <= *max {
         if cases.contains(&number) || verbose {
             println!("{number} is at coordinates ({x}, {y}), which is {} steps", x.abs() + y.abs());
 
             if verbose {
                 println!("  square_size = {square_size}, which_side = {which_side}, which_number_on_side = {which_number_on_side}");
             }
+        }
+
+        if number == 1 {
+            values.insert((0, 0), 1);
+            if verbose {
+                println!("number {number}, now at 0, 0");
+            }
+        } else if !found_value_above_test {
+            let mut new_value = 0;
+            if verbose {
+                println!("number {number}, now at {x}, {y}");
+            }
+            for xx in (x-1)..=(x+1) {
+                for yy in (y-1)..=(y+1) {
+                    if xx == x && yy == y {
+                        continue;
+                    }
+
+                    if let Some(adjacent_value) = values.get(&(xx, yy)) {
+                        if verbose {
+                            print!("  ({xx},{yy}): nv = {new_value} + {adjacent_value}");
+                        }
+                        new_value += adjacent_value;
+                        if verbose {
+                            println!(" = {new_value}");
+                        }
+                    } else {
+                        if verbose {
+                            println!("  {xx}, {yy}, no value yet");
+                        }
+                    }
+                }
+            }
+            values.insert((x, y), new_value.clone());
+
+            if !found_value_above_test && new_value > test_value {
+                println!("  *** First new value above {test_value} = {new_value}");
+                found_value_above_test = true;
+            } else {
+                if verbose {
+                    println!("  new_value {new_value}");
+                }
+            }
+
+            assert!(new_value != 0);
         }
 
         number += 1;
@@ -57,5 +104,5 @@ fn main() {
     cases.insert(23);
     cases.insert(1024);
     cases.insert(325489);
-    process(&cases, false);
+    process(&cases, 325489, false);
 }

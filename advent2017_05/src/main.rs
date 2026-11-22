@@ -1,6 +1,6 @@
 use adventlib::*;
 
-fn process(filename: &str, verbose: bool) {
+fn process(filename: &str, part_two: bool, verbose: bool) {
     let lines = match read_file_lines(filename) {
         Err(err) => {
             println!("process failed: {:?}", err);
@@ -23,10 +23,18 @@ fn process(filename: &str, verbose: bool) {
             instruction_index += *curr_instruction;
 
             if verbose {
-                println!("  instruction got incremented from {} to {}", *curr_instruction, *curr_instruction + 1);
+                print!("  instruction got changed from {} to ", *curr_instruction);
             }
 
-            *curr_instruction += 1;
+            if part_two && *curr_instruction >= 3 {
+                *curr_instruction -= 1;
+            } else {
+                *curr_instruction += 1;
+            }
+
+            if verbose {
+                println!("{}", *curr_instruction);
+            }
 
             num_steps += 1;
         } else {
@@ -38,6 +46,8 @@ fn process(filename: &str, verbose: bool) {
 }
 
 fn main() {
-    process("Example.txt", true);
-    process("Input.txt", false);
+    process("Example.txt", false, true);
+    process("Input.txt", false, false);
+    process("Example.txt", true, true);
+    process("Input.txt", true, false);
 }
